@@ -3,7 +3,7 @@
 > **A live demo of an automotive Scrum sprint board** built to showcase technical project management skills in the context of ECU & embedded systems development.
 
 ## 🔗 Live Demo
-👉 **[View Live Dashboard](https://YOUR-USERNAME.github.io/scrum-dashboard)**
+👉 **[View Live Dashboard](jayeshshukla1189-commits.github.io/scrum-dashboard/)**
 
 ---
 
