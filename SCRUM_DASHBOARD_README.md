@@ -43,7 +43,7 @@ This is a **functional Scrum/Sprint Management Dashboard** simulating a real aut
 ## 🚀 How to Run Locally
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/scrum-dashboard
+git clone https://github.com/jayeshshukla1189-commits/scrum-dashboard
 cd scrum-dashboard
 npm install
 npm start
