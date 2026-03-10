@@ -4,75 +4,86 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ADAS-ECU Scrum Dashboard | Jayesh Shukla</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#080C14;font-family:'Sora',system-ui,sans-serif;color:#E2E8F0;min-height:100vh}
-  ::-webkit-scrollbar{width:4px;height:4px}
-  ::-webkit-scrollbar-track{background:#0F1623}
-  ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
-  .ticket-card{transition:transform 0.15s,box-shadow 0.15s;cursor:pointer}
-  .ticket-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.4)!important}
-  .col-drop{transition:background 0.15s}
-  .col-drop.over{background:rgba(59,130,246,0.08)!important;border-color:rgba(59,130,246,0.4)!important}
-  .nav-btn{transition:all 0.2s;cursor:pointer}
-  .nav-btn:hover{background:rgba(255,255,255,0.08)!important}
-  .tag{display:inline-block;background:rgba(255,255,255,0.06);color:#94A3B8;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:1px 6px;font-size:10px;font-family:'JetBrains Mono';margin:2px 2px 0 0}
-  button{font-family:'Sora',sans-serif}
-  input,select,textarea{font-family:'Sora',sans-serif}
-  .board-wrap{display:flex;gap:0;overflow-x:auto;overflow-y:hidden;padding:16px 16px 0;height:calc(100vh - 160px)}
-  .col-wrap{flex:1;min-width:200px;max-width:280px;display:flex;flex-direction:column;overflow:hidden;border-radius:12px;margin:0 5px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)}
-  .col-tickets{flex:1;overflow-y:auto;padding:10px}
-  .metrics-wrap{overflow-y:auto;padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;height:calc(100vh - 160px)}
-  .metric-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px}
-  @media(max-width:700px){.metrics-wrap{grid-template-columns:1fr}.board-wrap{height:auto}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080C14;font-family:'Sora',system-ui,sans-serif;color:#E2E8F0;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#0F1623}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
+button{font-family:'Sora',sans-serif;cursor:pointer}
+input,select{font-family:'Sora',sans-serif;outline:none}
+.nav{background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.07);padding:0 20px;display:flex;align-items:center;height:54px;gap:12px;flex-shrink:0;flex-wrap:wrap}
+.sprint-bar{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.01);flex-wrap:wrap}
+.board{display:flex;gap:10px;padding:14px;overflow-x:auto;height:calc(100vh - 155px)}
+.col{flex:1;min-width:190px;max-width:260px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;transition:background 0.15s,border-color 0.15s}
+.col.dragover{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.4)}
+.col-header{padding:11px 13px 9px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+.col-body{flex:1;overflow-y:auto;padding:8px}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:11px 12px;margin-bottom:8px;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.4)}
+.card.selected{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.4)}
+.tag{display:inline-block;background:rgba(255,255,255,0.06);color:#94A3B8;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:1px 6px;font-size:10px;font-family:'JetBrains Mono';margin:2px 2px 0 0}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:310px;background:#0B1220;border-left:1px solid rgba(255,255,255,0.08);padding:22px;overflow-y:auto;z-index:50;box-shadow:-12px 0 40px rgba(0,0,0,0.5)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:#131B2A;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:26px;width:100%;max-width:400px}
+.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;color:#E2E8F0;font-size:13px;font-family:'Sora'}
+.sel{width:100%;background:#080C14;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 10px;color:#E2E8F0;font-size:13px;font-family:'Sora'}
+.label{font-size:11px;color:#64748B;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;overflow-y:auto;height:calc(100vh - 155px)}
+.mcard{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px}
+.mcard-title{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px}
+/* Bar chart */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bar-label{font-size:11px;color:#64748B;width:52px;text-align:right;flex-shrink:0;font-family:'JetBrains Mono'}
+.bar-track{flex:1;height:20px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:5px;transition:width 0.6s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
+.bar-val{font-size:10px;color:#fff;font-family:'JetBrains Mono';font-weight:600}
+/* Burndown SVG */
+.burndown-wrap{width:100%;overflow:hidden}
+/* Progress */
+.prog-track{height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#3B82F6,#10B981);transition:width 0.6s}
+@media(max-width:700px){.metric-grid{grid-template-columns:1fr}.board{height:auto}}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState } = React;
-const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } = Recharts;
 
+<div id="app"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
 const TEAM = [
-  { id:"JS", name:"Jayesh S.", role:"Project Lead", color:"#3B82F6" },
-  { id:"MR", name:"Maria R.",  role:"SW Engineer",  color:"#10B981" },
-  { id:"KP", name:"Kai P.",    role:"HW Engineer",  color:"#F59E0B" },
-  { id:"AN", name:"Anya N.",   role:"Test Engineer", color:"#8B5CF6" },
-  { id:"DM", name:"Dmitri M.", role:"AUTOSAR Dev",  color:"#EF4444" },
+  {id:"JS",name:"Jayesh S.",role:"Project Lead",color:"#3B82F6"},
+  {id:"MR",name:"Maria R.",role:"SW Engineer",color:"#10B981"},
+  {id:"KP",name:"Kai P.",role:"HW Engineer",color:"#F59E0B"},
+  {id:"AN",name:"Anya N.",role:"Test Engineer",color:"#8B5CF6"},
+  {id:"DM",name:"Dmitri M.",role:"AUTOSAR Dev",color:"#EF4444"},
 ];
-
-const PRIORITY = {
-  Critical:{ color:"#EF4444", bg:"#FEF2F2", border:"#FECACA" },
-  High:    { color:"#F59E0B", bg:"#FFFBEB", border:"#FDE68A" },
-  Medium:  { color:"#3B82F6", bg:"#EFF6FF", border:"#BFDBFE" },
-  Low:     { color:"#10B981", bg:"#ECFDF5", border:"#A7F3D0" },
+const PRIORITY_CFG = {
+  Critical:{color:"#EF4444",bg:"rgba(239,68,68,0.12)",border:"rgba(239,68,68,0.4)"},
+  High:    {color:"#F59E0B",bg:"rgba(245,158,11,0.12)",border:"rgba(245,158,11,0.4)"},
+  Medium:  {color:"#3B82F6",bg:"rgba(59,130,246,0.12)",border:"rgba(59,130,246,0.4)"},
+  Low:     {color:"#10B981",bg:"rgba(16,185,129,0.12)",border:"rgba(16,185,129,0.4)"},
 };
-
-const TYPE = {
-  "🐛 Bug":"#EF4444","✨ Feature":"#3B82F6","🔧 Task":"#8B5CF6","📋 Story":"#10B981","⚠️ Risk":"#F59E0B"
-};
-
 const COLS = [
-  { id:"backlog",    label:"Backlog",     icon:"📦", color:"#475569" },
-  { id:"todo",       label:"To Do",       icon:"📋", color:"#6366F1" },
-  { id:"inprogress", label:"In Progress", icon:"⚡", color:"#F59E0B" },
-  { id:"review",     label:"In Review",   icon:"🔍", color:"#8B5CF6" },
-  { id:"done",       label:"Done",        icon:"✅", color:"#10B981" },
+  {id:"backlog",label:"Backlog",icon:"📦",color:"#475569"},
+  {id:"todo",label:"To Do",icon:"📋",color:"#6366F1"},
+  {id:"inprogress",label:"In Progress",icon:"⚡",color:"#F59E0B"},
+  {id:"review",label:"In Review",icon:"🔍",color:"#8B5CF6"},
+  {id:"done",label:"Done",icon:"✅",color:"#10B981"},
 ];
+const TYPES = ["🐛 Bug","✨ Feature","🔧 Task","📋 Story","⚠️ Risk"];
+const TYPE_COLOR = {"🐛 Bug":"#EF4444","✨ Feature":"#3B82F6","🔧 Task":"#8B5CF6","📋 Story":"#10B981","⚠️ Risk":"#F59E0B"};
 
-const INIT = [
+let tickets = [
   {id:"ADAS-101",type:"📋 Story",title:"LiDAR ECU boot sequence validation",col:"done",priority:"High",points:8,assignee:"MR",epic:"LiDAR Integration",tags:["AUTOSAR","ECU"]},
-  {id:"ADAS-102",type:"🔧 Task",title:"CAN bus timing analysis – sensor fusion",col:"done",priority:"Critical",points:5,assignee:"KP",epic:"CAN/Ethernet",tags:["CAN","Timing"]},
+  {id:"ADAS-102",type:"🔧 Task",title:"CAN bus timing analysis – sensor fusion module",col:"done",priority:"Critical",points:5,assignee:"KP",epic:"CAN/Ethernet",tags:["CAN","Timing"]},
   {id:"ADAS-103",type:"✨ Feature",title:"AUTOSAR BSW configuration for RTE layer",col:"done",priority:"High",points:13,assignee:"DM",epic:"AUTOSAR Stack",tags:["AUTOSAR","BSW"]},
   {id:"ADAS-104",type:"🐛 Bug",title:"DCM response timeout under stress load",col:"review",priority:"Critical",points:5,assignee:"AN",epic:"Diagnostics",tags:["DCM","UDS"]},
   {id:"ADAS-105",type:"🔧 Task",title:"OEM milestone report – Sprint 7 KPIs",col:"review",priority:"Medium",points:3,assignee:"JS",epic:"Program Mgmt",tags:["Reporting","OEM"]},
   {id:"ADAS-106",type:"📋 Story",title:"Interior camera ECU – SWC integration test",col:"inprogress",priority:"High",points:8,assignee:"MR",epic:"Camera Integration",tags:["SWC","Testing"]},
-  {id:"ADAS-107",type:"✨ Feature",title:"Ethernet switch config – 100BASE-T1",col:"inprogress",priority:"High",points:8,assignee:"KP",epic:"CAN/Ethernet",tags:["Ethernet","Network"]},
+  {id:"ADAS-107",type:"✨ Feature",title:"Ethernet switch config – 100BASE-T1 automotive",col:"inprogress",priority:"High",points:8,assignee:"KP",epic:"CAN/Ethernet",tags:["Ethernet","Network"]},
   {id:"ADAS-108",type:"⚠️ Risk",title:"Supplier delay risk – sensor module delivery",col:"inprogress",priority:"Critical",points:2,assignee:"JS",epic:"Program Mgmt",tags:["Risk","Supplier"]},
   {id:"ADAS-109",type:"🔧 Task",title:"ISO 26262 ASIL-B safety analysis review",col:"todo",priority:"Critical",points:5,assignee:"AN",epic:"Functional Safety",tags:["ISO26262","ASIL"]},
   {id:"ADAS-110",type:"📋 Story",title:"ASPICE Level 2 process compliance audit",col:"todo",priority:"High",points:5,assignee:"JS",epic:"Program Mgmt",tags:["ASPICE","Audit"]},
@@ -83,308 +94,345 @@ const INIT = [
   {id:"ADAS-115",type:"⚠️ Risk",title:"ROM budget exceeded – BSW modules",col:"backlog",priority:"Medium",points:2,assignee:"DM",epic:"AUTOSAR Stack",tags:["Risk","Memory"]},
 ];
 
-const BURNDOWN = [
-  {day:"D1",remaining:84,ideal:84},{day:"D2",remaining:79,ideal:75},{day:"D3",remaining:72,ideal:67},
-  {day:"D4",remaining:68,ideal:58},{day:"D5",remaining:60,ideal:50},{day:"D6",remaining:51,ideal:42},
-  {day:"D7",remaining:45,ideal:33},{day:"D8",remaining:38,ideal:25},{day:"D9",remaining:28,ideal:17},
-  {day:"D10",remaining:21,ideal:8},
-];
+// ── STATE ─────────────────────────────────────────────────────────────────
+let state = {
+  view:"board", selected:null, dragging:null,
+  filterAssignee:"All", filterPriority:"All", showAdd:false,
+  newT:{type:"🔧 Task",title:"",priority:"Medium",assignee:"JS",points:3,epic:"",tags:""}
+};
 
-const VELOCITY = [
-  {sprint:"S4",pts:48},{sprint:"S5",pts:55},{sprint:"S6",pts:51},
-  {sprint:"S7",pts:62},{sprint:"S8",pts:58},{sprint:"S8 cur",pts:34},
-];
-
-function App() {
-  const [tickets, setTickets] = useState(INIT);
-  const [selected, setSelected] = useState(null);
-  const [view, setView] = useState("board");
-  const [dragging, setDragging] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
-  const [filterAssignee, setFilterAssignee] = useState("All");
-  const [filterPriority, setFilterPriority] = useState("All");
-  const [showAdd, setShowAdd] = useState(false);
-  const [newT, setNewT] = useState({type:"🔧 Task",title:"",priority:"Medium",assignee:"JS",points:3,epic:"",tags:""});
-
-  const move = (id, col) => { setTickets(t => t.map(x => x.id===id ? {...x,col} : x)); setSelected(null); };
-  const addTicket = () => {
-    if (!newT.title) return;
-    const id = "ADAS-"+(116+tickets.length);
-    setTickets(t=>[...t,{...newT,id,col:"backlog",tags:newT.tags.split(",").map(s=>s.trim()).filter(Boolean)}]);
-    setShowAdd(false);
-    setNewT({type:"🔧 Task",title:"",priority:"Medium",assignee:"JS",points:3,epic:"",tags:""});
-  };
-
-  const visible = tickets.filter(t =>
-    (filterAssignee==="All"||t.assignee===filterAssignee) &&
-    (filterPriority==="All"||t.priority===filterPriority)
-  );
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render(){
+  const app = document.getElementById("app");
   const totalPts = tickets.reduce((a,t)=>a+t.points,0);
   const donePts  = tickets.filter(t=>t.col==="done").reduce((a,t)=>a+t.points,0);
   const prog = Math.round((donePts/totalPts)*100);
-  const sel = selected ? tickets.find(t=>t.id===selected) : null;
-
-  return (
-    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
-      {/* NAV */}
-      <div style={{background:"rgba(255,255,255,0.02)",borderBottom:"1px solid rgba(255,255,255,0.07)",padding:"0 24px",display:"flex",alignItems:"center",height:"54px",gap:"16px",flexShrink:0}}>
-        <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-          <div style={{width:"28px",height:"28px",borderRadius:"8px",background:"linear-gradient(135deg,#3B82F6,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px"}}>🚗</div>
-          <div>
-            <div style={{fontSize:"13px",fontWeight:"700",color:"#F1F5F9",letterSpacing:"-0.02em"}}>ADAS-ECU Platform</div>
-            <div style={{fontSize:"10px",color:"#475569",fontFamily:"'JetBrains Mono'"}}>BMW LiDAR · Sprint 8</div>
-          </div>
-        </div>
-        <div style={{fontSize:"11px",color:"#334155",fontFamily:"'JetBrains Mono'",marginLeft:"4px"}}>by Jayesh Shukla · PM Demo</div>
-        <div style={{flex:1}}/>
-        {["board","metrics"].map(v=>(
-          <button key={v} onClick={()=>setView(v)} className="nav-btn"
-            style={{background:view===v?"rgba(59,130,246,0.15)":"transparent",border:view===v?"1px solid rgba(59,130,246,0.4)":"1px solid transparent",color:view===v?"#60A5FA":"#64748B",padding:"6px 14px",borderRadius:"8px",fontSize:"12px",fontWeight:"600"}}>
-            {v==="board"?"🗂 Board":"📊 Metrics"}
-          </button>
-        ))}
-        <button onClick={()=>setShowAdd(true)}
-          style={{background:"linear-gradient(135deg,#3B82F6,#6366F1)",color:"#fff",border:"none",borderRadius:"8px",padding:"7px 14px",fontSize:"12px",fontWeight:"700",boxShadow:"0 4px 12px rgba(99,102,241,0.4)"}}>
-          + New Ticket
-        </button>
-      </div>
-
-      {/* SPRINT BAR */}
-      <div style={{padding:"12px 24px",borderBottom:"1px solid rgba(255,255,255,0.05)",display:"flex",alignItems:"center",gap:"20px",background:"rgba(255,255,255,0.01)",flexWrap:"wrap"}}>
-        <div style={{flex:1,minWidth:"200px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"6px"}}>
-            <span style={{fontSize:"13px",fontWeight:"700",color:"#F1F5F9"}}>Sprint 8 · Weeks 3–4 of 4</span>
-            <span style={{background:"rgba(16,185,129,0.15)",color:"#34D399",border:"1px solid rgba(16,185,129,0.3)",padding:"2px 8px",borderRadius:"20px",fontSize:"10px",fontWeight:"700"}}>ACTIVE</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-            <div style={{flex:1,height:"6px",background:"rgba(255,255,255,0.08)",borderRadius:"3px",overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${prog}%`,background:"linear-gradient(90deg,#3B82F6,#10B981)",borderRadius:"3px",transition:"width 0.5s"}}/>
-            </div>
-            <span style={{fontSize:"11px",fontFamily:"'JetBrains Mono'",color:"#64748B",whiteSpace:"nowrap"}}>{donePts}/{totalPts} pts · {prog}%</span>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:"6px",alignItems:"center",flexWrap:"wrap"}}>
-          <span style={{fontSize:"10px",color:"#475569"}}>TEAM</span>
-          {TEAM.map(m=>(
-            <div key={m.id} onClick={()=>setFilterAssignee(filterAssignee===m.id?"All":m.id)} title={m.name}
-              style={{width:"28px",height:"28px",borderRadius:"50%",background:m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"10px",fontWeight:"700",color:"#fff",cursor:"pointer",border:filterAssignee===m.id?"2px solid white":"2px solid transparent",opacity:filterAssignee!=="All"&&filterAssignee!==m.id?0.4:1,transition:"all 0.2s"}}>
-              {m.id}
-            </div>
-          ))}
-          {filterAssignee!=="All"&&<button onClick={()=>setFilterAssignee("All")} style={{fontSize:"11px",color:"#64748B",background:"none",border:"none",cursor:"pointer"}}>✕ Clear</button>}
-        </div>
-        <select value={filterPriority} onChange={e=>setFilterPriority(e.target.value)}
-          style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",color:"#94A3B8",borderRadius:"8px",padding:"5px 10px",fontSize:"12px",outline:"none"}}>
-          <option value="All">All Priorities</option>
-          {Object.keys(PRIORITY).map(p=><option key={p} value={p}>{p}</option>)}
-        </select>
-      </div>
-
-      {view==="board" ? (
-        <div className="board-wrap">
-          {COLS.map(col=>{
-            const colT = visible.filter(t=>t.col===col.id);
-            const colPts = colT.reduce((a,t)=>a+t.points,0);
-            return (
-              <div key={col.id} className={`col-wrap col-drop${dragOver===col.id?" over":""}`}
-                onDragOver={e=>{e.preventDefault();setDragOver(col.id);}}
-                onDrop={e=>{e.preventDefault();if(dragging)move(dragging,col.id);setDragging(null);setDragOver(null);}}
-                onDragLeave={()=>setDragOver(null)}>
-                <div style={{padding:"12px 14px 10px",borderBottom:"1px solid rgba(255,255,255,0.06)",flexShrink:0}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
-                      <div style={{width:"8px",height:"8px",borderRadius:"50%",background:col.color}}/>
-                      <span style={{fontSize:"11px",fontWeight:"700",color:"#94A3B8",textTransform:"uppercase",letterSpacing:"0.08em"}}>{col.label}</span>
-                    </div>
-                    <div style={{display:"flex",gap:"5px",alignItems:"center"}}>
-                      <span style={{background:"rgba(255,255,255,0.08)",color:"#64748B",borderRadius:"20px",padding:"1px 7px",fontSize:"10px",fontFamily:"'JetBrains Mono'"}}>{colT.length}</span>
-                      <span style={{color:col.color,fontSize:"10px",fontFamily:"'JetBrains Mono'"}}>{colPts}pt</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-tickets">
-                  {colT.map(t=>{
-                    const pr=PRIORITY[t.priority];
-                    const member=TEAM.find(m=>m.id===t.assignee);
-                    return (
-                      <div key={t.id} className="ticket-card" draggable
-                        onDragStart={()=>setDragging(t.id)} onDragEnd={()=>{setDragging(null);setDragOver(null);}}
-                        onClick={()=>setSelected(t.id===selected?null:t.id)}
-                        style={{background:selected===t.id?"rgba(59,130,246,0.12)":"rgba(255,255,255,0.04)",border:`1px solid ${selected===t.id?"rgba(59,130,246,0.4)":"rgba(255,255,255,0.07)"}`,borderRadius:"10px",padding:"11px 12px",marginBottom:"8px",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-                          <span style={{fontSize:"9px",fontFamily:"'JetBrains Mono'",color:"#475569"}}>{t.id}</span>
-                          <span style={{fontSize:"9px",background:pr.bg,color:pr.color,padding:"1px 6px",borderRadius:"4px",fontWeight:"700",border:`1px solid ${pr.border}`}}>{t.priority}</span>
-                        </div>
-                        <div style={{fontSize:"12px",fontWeight:"600",color:"#E2E8F0",lineHeight:"1.45",marginBottom:"8px"}}>{t.title}</div>
-                        <div>{t.tags.slice(0,2).map(tag=><span key={tag} className="tag">{tag}</span>)}</div>
-                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"8px"}}>
-                          <span style={{fontSize:"10px",color:TYPE[t.type]||"#64748B"}}>{t.type}</span>
-                          <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
-                            <span style={{fontSize:"10px",fontFamily:"'JetBrains Mono'",color:"#475569"}}>{t.points}pt</span>
-                            <div style={{width:"20px",height:"20px",borderRadius:"50%",background:member?.color||"#475569",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"8px",fontWeight:"700",color:"#fff"}}>{t.assignee}</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="metrics-wrap">
-          {/* Stats */}
-          <div className="metric-card" style={{gridColumn:"1/-1"}}>
-            <div style={{display:"flex",gap:"24px",justifyContent:"space-around",flexWrap:"wrap"}}>
-              {[["Total Points",totalPts,"#64748B"],["Completed",donePts,"#10B981"],["Remaining",totalPts-donePts,"#F59E0B"],["In Progress",tickets.filter(t=>t.col==="inprogress").reduce((a,t)=>a+t.points,0),"#3B82F6"],["Tickets Done",`${tickets.filter(t=>t.col==="done").length}/${tickets.length}`,"#8B5CF6"]].map(([l,v,c])=>(
-                <div key={l} style={{textAlign:"center"}}>
-                  <div style={{fontSize:"28px",fontWeight:"800",color:c,letterSpacing:"-0.04em"}}>{v}</div>
-                  <div style={{fontSize:"11px",color:"#475569",marginTop:"2px",textTransform:"uppercase",letterSpacing:"0.06em"}}>{l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Burndown */}
-          <div className="metric-card">
-            <div style={{fontSize:"13px",fontWeight:"700",color:"#94A3B8",marginBottom:"14px",textTransform:"uppercase",letterSpacing:"0.06em"}}>📉 Sprint Burndown</div>
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={BURNDOWN}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
-                <XAxis dataKey="day" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:"#1E293B",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",color:"#E2E8F0",fontSize:12}}/>
-                <Line type="monotone" dataKey="ideal" stroke="#334155" strokeDasharray="5 5" dot={false} strokeWidth={1.5} name="Ideal"/>
-                <Line type="monotone" dataKey="remaining" stroke="#3B82F6" dot={{fill:"#3B82F6",r:3}} strokeWidth={2.5} name="Actual"/>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          {/* Velocity */}
-          <div className="metric-card">
-            <div style={{fontSize:"13px",fontWeight:"700",color:"#94A3B8",marginBottom:"14px",textTransform:"uppercase",letterSpacing:"0.06em"}}>⚡ Team Velocity</div>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={VELOCITY} barSize={28}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false}/>
-                <XAxis dataKey="sprint" tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <YAxis tick={{fill:"#475569",fontSize:10}} axisLine={false} tickLine={false}/>
-                <Tooltip contentStyle={{background:"#1E293B",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",color:"#E2E8F0",fontSize:12}}/>
-                <Bar dataKey="pts" fill="#3B82F6" radius={[6,6,0,0]} name="Story Points"/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          {/* Workload */}
-          <div className="metric-card">
-            <div style={{fontSize:"13px",fontWeight:"700",color:"#94A3B8",marginBottom:"14px",textTransform:"uppercase",letterSpacing:"0.06em"}}>👥 Team Workload</div>
-            {TEAM.map(m=>{
-              const assigned=tickets.filter(t=>t.assignee===m.id&&t.col!=="done");
-              const pts=assigned.reduce((a,t)=>a+t.points,0);
-              return (
-                <div key={m.id} style={{marginBottom:"12px"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:"5px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                      <div style={{width:"22px",height:"22px",borderRadius:"50%",background:m.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"9px",fontWeight:"700",color:"#fff"}}>{m.id}</div>
-                      <span style={{fontSize:"12px",color:"#CBD5E1"}}>{m.name}</span>
-                    </div>
-                    <span style={{fontSize:"11px",fontFamily:"'JetBrains Mono'",color:"#64748B"}}>{pts}pt · {assigned.length} tickets</span>
-                  </div>
-                  <div style={{height:"5px",background:"rgba(255,255,255,0.07)",borderRadius:"3px",overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${Math.min((pts/21)*100,100)}%`,background:m.color,borderRadius:"3px"}}/>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* Priority */}
-          <div className="metric-card">
-            <div style={{fontSize:"13px",fontWeight:"700",color:"#94A3B8",marginBottom:"14px",textTransform:"uppercase",letterSpacing:"0.06em"}}>🚦 Priority Breakdown</div>
-            {Object.keys(PRIORITY).map(p=>{
-              const count=tickets.filter(t=>t.priority===p).length;
-              const pr=PRIORITY[p];
-              return (
-                <div key={p} style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}}>
-                  <div style={{width:"8px",height:"8px",borderRadius:"50%",background:pr.color,flexShrink:0}}/>
-                  <span style={{fontSize:"12px",color:"#CBD5E1",flex:1}}>{p}</span>
-                  <div style={{width:"80px",height:"5px",background:"rgba(255,255,255,0.07)",borderRadius:"3px",overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${(count/tickets.length)*100}%`,background:pr.color,borderRadius:"3px"}}/>
-                  </div>
-                  <span style={{fontSize:"11px",fontFamily:"'JetBrains Mono'",color:"#475569",width:"16px",textAlign:"right"}}>{count}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* TICKET DETAIL */}
-      {sel && (
-        <div style={{position:"fixed",right:0,top:0,bottom:0,width:"320px",background:"#0F1623",borderLeft:"1px solid rgba(255,255,255,0.08)",padding:"24px",overflowY:"auto",zIndex:50,boxShadow:"-12px 0 40px rgba(0,0,0,0.4)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"20px"}}>
-            <span style={{fontSize:"11px",fontFamily:"'JetBrains Mono'",color:"#475569"}}>{sel.id}</span>
-            <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:"#64748B",fontSize:"18px",cursor:"pointer"}}>✕</button>
-          </div>
-          <div style={{fontSize:"15px",fontWeight:"700",color:"#F1F5F9",lineHeight:"1.4",marginBottom:"16px"}}>{sel.title}</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"16px"}}>
-            {[["Epic",sel.epic],["Type",sel.type],["Points",sel.points+" pts"],["Priority",sel.priority]].map(([k,v])=>(
-              <div key={k} style={{background:"rgba(255,255,255,0.04)",borderRadius:"8px",padding:"10px"}}>
-                <div style={{fontSize:"10px",color:"#475569",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"4px"}}>{k}</div>
-                <div style={{fontSize:"12px",fontWeight:"600",color:"#CBD5E1"}}>{v}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{fontSize:"11px",color:"#475569",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"8px"}}>Move to Column</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"16px"}}>
-            {COLS.map(c=>(
-              <button key={c.id} onClick={()=>move(sel.id,c.id)}
-                style={{background:sel.col===c.id?"rgba(59,130,246,0.2)":"rgba(255,255,255,0.05)",border:`1px solid ${sel.col===c.id?"rgba(59,130,246,0.5)":"rgba(255,255,255,0.1)"}`,color:sel.col===c.id?"#60A5FA":"#94A3B8",padding:"5px 10px",borderRadius:"8px",fontSize:"11px",fontWeight:"600",cursor:"pointer"}}>
-                {c.icon} {c.label}
-              </button>
-            ))}
-          </div>
-          <div style={{fontSize:"11px",color:"#475569",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:"8px"}}>Tags</div>
-          <div>{sel.tags.map(tag=><span key={tag} className="tag">{tag}</span>)}</div>
-        </div>
-      )}
-
-      {/* ADD TICKET MODAL */}
-      {showAdd && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"20px"}}>
-          <div style={{background:"#131B2A",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px",width:"100%",maxWidth:"420px",boxShadow:"0 25px 60px rgba(0,0,0,0.6)"}}>
-            <h3 style={{color:"#F1F5F9",fontSize:"16px",fontWeight:"700",marginBottom:"20px"}}>+ New Ticket</h3>
-            {[["Title *","title","text","Short description…"],["Epic","epic","text","e.g. LiDAR Integration"]].map(([l,k,t,p])=>(
-              <div key={k} style={{marginBottom:"12px"}}>
-                <label style={{fontSize:"11px",color:"#64748B",display:"block",marginBottom:"5px",textTransform:"uppercase",letterSpacing:"0.06em"}}>{l}</label>
-                <input type={t} value={newT[k]} onChange={e=>setNewT(n=>({...n,[k]:e.target.value}))} placeholder={p}
-                  style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"9px 12px",color:"#E2E8F0",fontSize:"13px",outline:"none"}}/>
-              </div>
-            ))}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"12px"}}>
-              {[["Type","type",Object.keys(TYPE)],["Priority","priority",Object.keys(PRIORITY)],["Assignee","assignee",TEAM.map(m=>m.id)],["Points","points",[1,2,3,5,8,13,21]]].map(([l,k,opts])=>(
-                <div key={k}>
-                  <label style={{fontSize:"11px",color:"#64748B",display:"block",marginBottom:"5px",textTransform:"uppercase",letterSpacing:"0.06em"}}>{l}</label>
-                  <select value={newT[k]} onChange={e=>setNewT(n=>({...n,[k]:k==="points"?+e.target.value:e.target.value}))}
-                    style={{width:"100%",background:"#080C14",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"9px 10px",color:"#E2E8F0",fontSize:"13px",outline:"none"}}>
-                    {opts.map(o=><option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-              ))}
-            </div>
-            <div style={{marginBottom:"18px"}}>
-              <label style={{fontSize:"11px",color:"#64748B",display:"block",marginBottom:"5px",textTransform:"uppercase",letterSpacing:"0.06em"}}>Tags (comma separated)</label>
-              <input value={newT.tags} onChange={e=>setNewT(n=>({...n,tags:e.target.value}))} placeholder="AUTOSAR, CAN, Safety…"
-                style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",padding:"9px 12px",color:"#E2E8F0",fontSize:"13px",outline:"none"}}/>
-            </div>
-            <div style={{display:"flex",gap:"10px"}}>
-              <button onClick={addTicket} style={{flex:1,background:"linear-gradient(135deg,#3B82F6,#6366F1)",color:"#fff",border:"none",borderRadius:"10px",padding:"11px",fontSize:"13px",fontWeight:"700",cursor:"pointer"}}>Create Ticket</button>
-              <button onClick={()=>setShowAdd(false)} style={{background:"rgba(255,255,255,0.06)",color:"#64748B",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",padding:"11px 18px",fontSize:"13px",cursor:"pointer"}}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+  const visible = tickets.filter(t=>
+    (state.filterAssignee==="All"||t.assignee===state.filterAssignee)&&
+    (state.filterPriority==="All"||t.priority===state.filterPriority)
   );
+  const sel = state.selected ? tickets.find(t=>t.id===state.selected) : null;
+
+  app.innerHTML = `
+  <!-- NAV -->
+  <div class="nav">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3B82F6,#6366F1);display:flex;align-items:center;justify-content:center;font-size:16px">🚗</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#F1F5F9;letter-spacing:-0.02em">ADAS-ECU Platform</div>
+        <div style="font-size:10px;color:#475569;font-family:'JetBrains Mono'">BMW LiDAR · Sprint 8 &nbsp;·&nbsp; <span style="color:#334155">by Jayesh Shukla</span></div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    <button onclick="setView('board')" style="background:${state.view==='board'?'rgba(59,130,246,0.15)':'transparent'};border:1px solid ${state.view==='board'?'rgba(59,130,246,0.4)':'transparent'};color:${state.view==='board'?'#60A5FA':'#64748B'};padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600">🗂 Board</button>
+    <button onclick="setView('metrics')" style="background:${state.view==='metrics'?'rgba(59,130,246,0.15)':'transparent'};border:1px solid ${state.view==='metrics'?'rgba(59,130,246,0.4)':'transparent'};color:${state.view==='metrics'?'#60A5FA':'#64748B'};padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600">📊 Metrics</button>
+    <button onclick="openAdd()" style="background:linear-gradient(135deg,#3B82F6,#6366F1);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(99,102,241,0.4)">+ New Ticket</button>
+  </div>
+
+  <!-- SPRINT BAR -->
+  <div class="sprint-bar">
+    <div style="flex:1;min-width:180px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:700;color:#F1F5F9">Sprint 8 · Weeks 3–4 of 4</span>
+        <span style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">ACTIVE</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="prog-track" style="flex:1"><div class="prog-fill" style="width:${prog}%"></div></div>
+        <span style="font-size:11px;font-family:'JetBrains Mono';color:#64748B;white-space:nowrap">${donePts}/${totalPts} pts · ${prog}%</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:10px;color:#475569">TEAM</span>
+      ${TEAM.map(m=>`
+        <div onclick="toggleAssignee('${m.id}')" title="${m.name}" style="width:28px;height:28px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;cursor:pointer;border:2px solid ${state.filterAssignee===m.id?'white':'transparent'};opacity:${state.filterAssignee!=='All'&&state.filterAssignee!==m.id?0.35:1};transition:all 0.2s">${m.id}</div>
+      `).join('')}
+      ${state.filterAssignee!=="All"?`<button onclick="toggleAssignee('All')" style="font-size:11px;color:#64748B;background:none;border:none;cursor:pointer">✕</button>`:''}
+    </div>
+    <select onchange="setPriority(this.value)" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#94A3B8;border-radius:8px;padding:5px 10px;font-size:12px;outline:none">
+      <option value="All" ${state.filterPriority==="All"?"selected":""}>All Priorities</option>
+      ${Object.keys(PRIORITY_CFG).map(p=>`<option value="${p}" ${state.filterPriority===p?"selected":""}>${p}</option>`).join('')}
+    </select>
+  </div>
+
+  ${state.view==="board" ? renderBoard(visible) : renderMetrics(donePts, totalPts)}
+
+  ${sel ? renderDrawer(sel) : ''}
+  ${state.showAdd ? renderModal() : ''}
+  `;
+
+  // Drag & drop
+  document.querySelectorAll('.col').forEach(col=>{
+    col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('dragover');});
+    col.addEventListener('dragleave',()=>col.classList.remove('dragover'));
+    col.addEventListener('drop',e=>{
+      e.preventDefault();col.classList.remove('dragover');
+      if(state.dragging){moveTicket(state.dragging,col.dataset.col);state.dragging=null;}
+    });
+  });
+  document.querySelectorAll('.card[draggable]').forEach(card=>{
+    card.addEventListener('dragstart',()=>state.dragging=card.dataset.id);
+    card.addEventListener('dragend',()=>state.dragging=null);
+  });
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+function renderBoard(visible){
+  return `<div class="board">
+    ${COLS.map(col=>{
+      const colT = visible.filter(t=>t.col===col.id);
+      const colPts = colT.reduce((a,t)=>a+t.points,0);
+      return `
+      <div class="col" data-col="${col.id}">
+        <div class="col-header">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${col.color}"></div>
+              <span style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em">${col.label}</span>
+            </div>
+            <div style="display:flex;gap:5px;align-items:center">
+              <span style="background:rgba(255,255,255,0.08);color:#64748B;border-radius:20px;padding:1px 7px;font-size:10px;font-family:'JetBrains Mono'">${colT.length}</span>
+              <span style="color:${col.color};font-size:10px;font-family:'JetBrains Mono'">${colPts}pt</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-body">
+          ${colT.map(t=>{
+            const pr = PRIORITY_CFG[t.priority];
+            const member = TEAM.find(m=>m.id===t.assignee);
+            return `
+            <div class="card ${state.selected===t.id?'selected':''}" draggable="true" data-id="${t.id}" onclick="selectTicket('${t.id}')">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:9px;font-family:'JetBrains Mono';color:#475569">${t.id}</span>
+                <span style="font-size:9px;background:${pr.bg};color:${pr.color};padding:1px 7px;border-radius:4px;font-weight:700;border:1px solid ${pr.border}">${t.priority}</span>
+              </div>
+              <div style="font-size:12px;font-weight:600;color:#E2E8F0;line-height:1.45;margin-bottom:8px">${t.title}</div>
+              <div>${t.tags.slice(0,2).map(tag=>`<span class="tag">${tag}</span>`).join('')}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                <span style="font-size:10px;color:${TYPE_COLOR[t.type]||'#64748B'}">${t.type}</span>
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-size:10px;font-family:'JetBrains Mono';color:#475569">${t.points}pt</span>
+                  <div style="width:20px;height:20px;border-radius:50%;background:${member?.color||'#475569'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${t.assignee}</div>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderMetrics(donePts, totalPts){
+  const velocity = [
+    {s:"S4",v:48},{s:"S5",v:55},{s:"S6",v:51},{s:"S7",v:62},{s:"S8",v:58},{s:"Now",v:34}
+  ];
+  const maxV = 70;
+  const burndown = [
+    {d:"D1",r:84,i:84},{d:"D2",r:79,i:75},{d:"D3",r:72,i:67},{d:"D4",r:68,i:58},
+    {d:"D5",r:60,i:50},{d:"D6",r:51,i:42},{d:"D7",r:45,i:33},{d:"D8",r:38,i:25},
+    {d:"D9",r:28,i:17},{d:"D10",r:21,i:8}
+  ];
+  const svgW=280, svgH=130, padL=24, padB=20, padT=8, padR=8;
+  const w=svgW-padL-padR, h=svgH-padT-padB;
+  const maxR=90;
+  const px=(i)=>padL+i*(w/(burndown.length-1));
+  const py=(v)=>padT+h-(v/maxR)*h;
+  const actualPath=burndown.map((d,i)=>`${i===0?'M':'L'}${px(i)},${py(d.r)}`).join(' ');
+  const idealPath=burndown.map((d,i)=>`${i===0?'M':'L'}${px(i)},${py(d.i)}`).join(' ');
+
+  const inProgressPts = tickets.filter(t=>t.col==="inprogress").reduce((a,t)=>a+t.points,0);
+  const remaining = totalPts - donePts;
+
+  return `<div class="metric-grid">
+    <!-- Stats row -->
+    <div class="mcard" style="grid-column:1/-1">
+      <div style="display:flex;gap:16px;justify-content:space-around;flex-wrap:wrap">
+        ${[["Total Points",totalPts,"#64748B"],["Completed",donePts,"#10B981"],["Remaining",remaining,"#F59E0B"],["In Progress",inProgressPts,"#3B82F6"],["Tickets Done",tickets.filter(t=>t.col==="done").length+"/"+tickets.length,"#8B5CF6"]].map(([l,v,c])=>`
+          <div style="text-align:center;padding:6px 12px">
+            <div style="font-size:30px;font-weight:800;color:${c};letter-spacing:-0.04em;font-family:'Sora'">${v}</div>
+            <div style="font-size:10px;color:#475569;margin-top:3px;text-transform:uppercase;letter-spacing:0.06em">${l}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Burndown -->
+    <div class="mcard">
+      <div class="mcard-title">📉 Sprint Burndown</div>
+      <svg width="100%" viewBox="0 0 ${svgW} ${svgH}" style="overflow:visible">
+        ${[0,20,40,60,80].map(v=>`
+          <line x1="${padL}" y1="${py(v)}" x2="${svgW-padR}" y2="${py(v)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <text x="${padL-3}" y="${py(v)+4}" fill="#475569" font-size="8" text-anchor="end" font-family="JetBrains Mono">${v}</text>
+        `).join('')}
+        ${burndown.map((d,i)=>`<text x="${px(i)}" y="${svgH}" fill="#475569" font-size="8" text-anchor="middle" font-family="JetBrains Mono">${d.d}</text>`).join('')}
+        <path d="${idealPath}" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <path d="${actualPath}" fill="none" stroke="#3B82F6" stroke-width="2.5"/>
+        ${burndown.map((d,i)=>`<circle cx="${px(i)}" cy="${py(d.r)}" r="3" fill="#3B82F6"/>`).join('')}
+        <text x="${svgW-padR}" y="${py(burndown[burndown.length-1].i)-5}" fill="#475569" font-size="8" text-anchor="end">Ideal</text>
+        <text x="${svgW-padR}" y="${py(burndown[burndown.length-1].r)-5}" fill="#3B82F6" font-size="8" text-anchor="end">Actual</text>
+      </svg>
+    </div>
+
+    <!-- Velocity -->
+    <div class="mcard">
+      <div class="mcard-title">⚡ Team Velocity</div>
+      ${velocity.map(d=>`
+        <div class="bar-row">
+          <span class="bar-label">${d.s}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(d.v/maxV)*100}%;background:${d.s==='Now'?'rgba(59,130,246,0.5)':'#3B82F6'}">
+              <span class="bar-val">${d.v}</span>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- Workload -->
+    <div class="mcard">
+      <div class="mcard-title">👥 Team Workload</div>
+      ${TEAM.map(m=>{
+        const assigned = tickets.filter(t=>t.assignee===m.id&&t.col!=="done");
+        const pts = assigned.reduce((a,t)=>a+t.points,0);
+        return `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:22px;height:22px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">${m.id}</div>
+              <span style="font-size:12px;color:#CBD5E1">${m.name}</span>
+            </div>
+            <span style="font-size:11px;font-family:'JetBrains Mono';color:#64748B">${pts}pt · ${assigned.length} tickets</span>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${Math.min((pts/21)*100,100)}%;background:${m.color};border-radius:3px"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Priority breakdown -->
+    <div class="mcard">
+      <div class="mcard-title">🚦 Priority Breakdown</div>
+      ${Object.keys(PRIORITY_CFG).map(p=>{
+        const count = tickets.filter(t=>t.priority===p).length;
+        const pr = PRIORITY_CFG[p];
+        return `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${pr.color};flex-shrink:0"></div>
+          <span style="font-size:12px;color:#CBD5E1;flex:1">${p}</span>
+          <div style="width:90px;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${(count/tickets.length)*100}%;background:${pr.color};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;font-family:'JetBrains Mono';color:#64748B;width:16px;text-align:right">${count}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDrawer(sel){
+  return `
+  <div class="drawer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <span style="font-size:11px;font-family:'JetBrains Mono';color:#475569">${sel.id}</span>
+      <button onclick="selectTicket(null)" style="background:none;border:none;color:#64748B;font-size:18px">✕</button>
+    </div>
+    <div style="font-size:15px;font-weight:700;color:#F1F5F9;line-height:1.4;margin-bottom:16px">${sel.title}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      ${[["Epic",sel.epic||"—"],["Type",sel.type],["Points",sel.points+" pts"],["Priority",sel.priority]].map(([k,v])=>`
+        <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">${k}</div>
+          <div style="font-size:12px;font-weight:600;color:#CBD5E1">${v}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Move to Column</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      ${COLS.map(c=>`
+        <button onclick="moveTicket('${sel.id}','${c.id}')"
+          style="background:${sel.col===c.id?'rgba(59,130,246,0.2)':'rgba(255,255,255,0.05)'};border:1px solid ${sel.col===c.id?'rgba(59,130,246,0.5)':'rgba(255,255,255,0.1)'};color:${sel.col===c.id?'#60A5FA':'#94A3B8'};padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600">
+          ${c.icon} ${c.label}
+        </button>
+      `).join('')}
+    </div>
+    <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Tags</div>
+    <div>${sel.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</div>
+  </div>`;
+}
+
+function renderModal(){
+  const n = state.newT;
+  return `
+  <div class="modal-bg" onclick="closeModal(event)">
+    <div class="modal">
+      <h3 style="color:#F1F5F9;font-size:16px;font-weight:700;margin-bottom:18px">+ New Ticket</h3>
+      <div style="margin-bottom:12px">
+        <label class="label">Title *</label>
+        <input class="inp" id="nt-title" value="${n.title}" oninput="updateNew('title',this.value)" placeholder="Short description…"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="label">Epic</label>
+        <input class="inp" id="nt-epic" value="${n.epic}" oninput="updateNew('epic',this.value)" placeholder="e.g. LiDAR Integration"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <label class="label">Type</label>
+          <select class="sel" onchange="updateNew('type',this.value)">
+            ${TYPES.map(t=>`<option value="${t}" ${n.type===t?"selected":""}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="label">Priority</label>
+          <select class="sel" onchange="updateNew('priority',this.value)">
+            ${Object.keys(PRIORITY_CFG).map(p=>`<option value="${p}" ${n.priority===p?"selected":""}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="label">Assignee</label>
+          <select class="sel" onchange="updateNew('assignee',this.value)">
+            ${TEAM.map(m=>`<option value="${m.id}" ${n.assignee===m.id?"selected":""}>${m.name}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="label">Story Points</label>
+          <select class="sel" onchange="updateNew('points',+this.value)">
+            ${[1,2,3,5,8,13,21].map(p=>`<option value="${p}" ${n.points===p?"selected":""}>${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:18px">
+        <label class="label">Tags (comma separated)</label>
+        <input class="inp" value="${n.tags}" oninput="updateNew('tags',this.value)" placeholder="AUTOSAR, CAN, Safety…"/>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="addTicket()" style="flex:1;background:linear-gradient(135deg,#3B82F6,#6366F1);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700">Create Ticket</button>
+        <button onclick="state.showAdd=false;render()" style="background:rgba(255,255,255,0.06);color:#64748B;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 18px;font-size:13px">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────
+function setView(v){ state.view=v; state.selected=null; render(); }
+function selectTicket(id){ state.selected=state.selected===id?null:id; render(); }
+function moveTicket(id,col){ tickets=tickets.map(t=>t.id===id?{...t,col}:t); state.selected=null; render(); }
+function toggleAssignee(id){ state.filterAssignee=state.filterAssignee===id?"All":id; render(); }
+function setPriority(v){ state.filterPriority=v; render(); }
+function openAdd(){ state.showAdd=true; render(); }
+function closeModal(e){ if(e.target.classList.contains('modal-bg')){ state.showAdd=false; render(); } }
+function updateNew(k,v){ state.newT={...state.newT,[k]:v}; }
+function addTicket(){
+  const title = document.getElementById('nt-title')?.value || state.newT.title;
+  if(!title.trim()) return;
+  const id="ADAS-"+(116+tickets.length);
+  const tags=state.newT.tags.split(",").map(s=>s.trim()).filter(Boolean);
+  tickets=[...tickets,{...state.newT,title,id,col:"backlog",tags}];
+  state.showAdd=false;
+  state.newT={type:"🔧 Task",title:"",priority:"Medium",assignee:"JS",points:3,epic:"",tags:""};
+  render();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+render();
 </script>
 </body>
 </html>
